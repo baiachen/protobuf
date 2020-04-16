@@ -1,0 +1,21 @@
+{
+    "name": "baiaprotobuf",
+    "type": "project",
+    "keywords": [
+        "php",
+        "swoole",
+        "protobuf"
+    ],
+    "description": "protocolbuffer demo",
+    "require": {
+        "php": ">=7.1",
+        "ext-swoole": ">=4.4",
+        "google/protobuf": "^3.11"
+    },
+    "autoload": {
+        "psr-4": {
+            "Yd\\": "Yd/",
+            "GPBMetadata\\": "GPBMetadata/"
+        }
+    }
+}

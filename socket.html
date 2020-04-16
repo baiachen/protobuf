@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>protobuf.js</title>
+</head>
+<body>
+test
+<div id="insert"></div>
+</body>
+<script src="https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.8/dist/protobuf.min.js"></script>
+<script type="text/javascript">
+    const PR = protobuf.parse("syntax = \"proto3\";  \npackage cj;\n\nmessage data{\nstring c = 1;\nstring j = 2;\n}");
+    const AwesomeMessage = PR.root.lookupType("cj.data")
+    const ws = new WebSocket("ws://0.0.0.0:9501");
+    ws.binaryType = "arraybuffer";
+    ws.onopen = function()
+    {
+        let content = {c:'login',j:'{name:"cj", age:19}'}
+        send(content);
+    };
+
+    ws.onmessage = function (evt)
+    {
+        const received_msg = evt.data;
+        console.log('received_msg', received_msg)
+        let data
+        try {
+
+            let buffer = new Uint8Array(evt.data);
+            let decodedMessage = AwesomeMessage.decode(buffer);
+            data = AwesomeMessage.toObject(decodedMessage, {c: String,  j: String});
+        } catch (e) {
+            if (e instanceof protobuf.util.ProtocolError) {
+                data = JSON.parse(evt.data);
+            } else {
+                data = JSON.parse(evt.data);
+            }
+        }
+
+        console.log('DATA', data)
+
+        document.getElementById('insert').innerHTML = JSON.stringify(data)
+
+        if(data.c != 'login'){
+            let content = {c:'login',j:'{name:"cj", age:19}'}
+            send(content)
+        }
+    };
+
+    ws.onclose = function()
+    {
+        // 关闭 websocket
+        // alert("连接已关闭...");
+    };
+
+    function send(data){
+
+        let errMsg = AwesomeMessage.verify(data);
+        console.log('errmsg', errMsg)
+        if (errMsg){
+            data.c = ""+data.c;
+            data.j = ""+data.j;
+        }
+
+        let message = AwesomeMessage.create(data);
+        console.log('message', message)
+        let buffer  = AwesomeMessage.encode(message).finish();
+        console.log('buffer', buffer)
+        ws.send(buffer)
+    }
+
+</script>
+</html>
